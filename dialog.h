@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include "myudpsocket.h"
+//#include "keyfilter.h"
+
 namespace Ui {
 class Dialog;
 }
@@ -14,12 +16,16 @@ public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
 
+protected slots:
+    void clicked();
+    void updateMessages(QString, QString);
+    void updateUserList(QMap<QString, quint16>);
+
 private:
     MyUDPSocket socket;
     QString message;
     Ui::Dialog *ui;
-public slots:
-    void clicked();
+    bool eventFilter(QObject *, QEvent *);
 };
 
 #endif // DIALOG_H

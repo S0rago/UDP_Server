@@ -6,45 +6,48 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>400</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>400</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="sendButton">
    <property name="geometry">
     <rect>
-     <x>329</x>
-     <y>254</y>
-     <width>61</width>
+     <x>400</x>
+     <y>350</y>
+     <width>81</width>
      <height>41</height>
     </rect>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::ClickFocus</enum>
    </property>
    <property name="text">
     <string>Send</string>
    </property>
   </widget>
-  <widget class="QTextEdit" name="logBox">
+  <widget class="QTextBrowser" name="logBox">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>10</y>
      <width>311</width>
-     <height>231</height>
+     <height>321</height>
     </rect>
    </property>
    <property name="readOnly">
@@ -55,9 +58,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>259</y>
-     <width>311</width>
-     <height>31</height>
+     <y>350</y>
+     <width>371</width>
+     <height>41</height>
     </rect>
    </property>
    <property name="verticalScrollBarPolicy">
@@ -68,6 +71,50 @@
    </property>
    <property name="placeholderText">
     <string>Enter message</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="userListBox">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>30</y>
+     <width>141</width>
+     <height>291</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="userListLbl">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>10</y>
+     <width>121</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>121</width>
+     <height>16</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>121</width>
+     <height>16</height>
+    </size>
+   </property>
+   <property name="text">
+    <string>User List</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::AutoText</enum>
+   </property>
+   <property name="scaledContents">
+    <bool>false</bool>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>
