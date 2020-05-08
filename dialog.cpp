@@ -38,12 +38,13 @@ void Dialog::updateUserList(QMap<QString, quint16> userList) {
     QMap<QString, quint16>::iterator iterMap = userList.begin();
     while(iterMap != userList.end()) {
         ui->userListBox->append(iterMap.key());
+        iterMap++;
     }
 }
 
 bool Dialog::eventFilter(QObject* obj, QEvent* event)
 {
-    if (event->type()==QEvent::KeyPress && obj == ui->msgBox) {
+    if (obj == ui->msgBox && event->type()==QEvent::KeyPress) {
         QKeyEvent* key = static_cast<QKeyEvent*>(event);
         if ((key->key()==Qt::Key_Enter) || (key->key()==Qt::Key_Return)) {
             clicked();

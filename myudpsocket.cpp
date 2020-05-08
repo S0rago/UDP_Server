@@ -1,5 +1,6 @@
 #include "myudpsocket.h"
 #include <QTextStream>
+#include <QDataStream>
 #include <QRegExp>
 
 MyUDPSocket::MyUDPSocket(QObject *parent) :
@@ -11,39 +12,39 @@ MyUDPSocket::MyUDPSocket(QObject *parent) :
 }
 
 void MyUDPSocket::SendMessage(QString input) {
+    //message+spearator byte+crc number
     QByteArray response;
     response.append(input);
-    response.append(CRC32(response.data(), response.length()));
+    unsigned int crc = CRC32(response.data(), response.length());
+    response.append(0xFF);
+    response.append(QByteArray::number(crc));
 
     QMap<QString, quint16>::iterator iterMap = userList.begin();
     while(iterMap != userList.end()) {
         socket->writeDatagram(response, QHostAddress(iterMap.key()), iterMap.value());
+        iterMap++;
     }
 }
 
 void MyUDPSocket::readyRead() {
     QByteArray buffer;
-    buffer.resize(socket->pendingDatagramSize() + 10);
+    buffer.resize(socket->pendingDatagramSize());
 
     QHostAddress sender;
     quint16 senderPort;
 
     socket->readDatagram(buffer.data(), buffer.size(), &sender, &senderPort);
     QByteArrayList list = ParseMessage(buffer);
-    QByteArray message = list.at(1);
-    unsigned int chksum = list.at(0).toInt();
+    QByteArray message = list.at(0);
+    unsigned int chksum = list.at(1).toUInt();
 
     if (chksum == CRC32(message.data(),message.length())) {
         QString senderStr = sender.toString();
-        if (!userList.contains(senderStr)) {
-            userList.insert(senderStr, senderPort);
-            emit newUser(userList);
-            qDebug() << "new user: " << senderStr;
-        }
+        AddUser(senderStr, senderPort);
         emit doneReading(senderStr, message);
 
         QString toPrint = QString("<%1>: %2").arg(senderStr, message);
-        qDebug() << toPrint;
+        qDebug().noquote() << toPrint;
     }
     else qDebug("Recieve error");
 
@@ -71,9 +72,9 @@ unsigned int MyUDPSocket::CRC32(char *buf, unsigned long len) {
 }
 
 QByteArrayList MyUDPSocket::ParseMessage(QByteArray arr) {
-    QByteArrayList list;
-    list.append(arr.right(10)); // CRC32 checksum
-    list.append(arr.left(arr.length() - 10));
+    QByteArrayList list = arr.split(0xFF);
+    //list.append(arr.mid(arr.indexOf(0xFF)+1)); // CRC32 checksum
+    //list.append(arr.left(arr.length() - list[0].length()));
     //list.append(arr.left(4)); TODO add packet header
     return list;
 }
@@ -92,4 +93,15 @@ quint16 MyUDPSocket::getBindPort() {
     }
     qDebug("Port will be set to 6000");
     return 6000;
+}
+
+void MyUDPSocket::AddUser(QString senderAdr, quint16 senderPort) {
+    if (!userList.contains(senderAdr)) {
+        userList.insert(senderAdr, senderPort);
+        emit newUser(userList);
+        qDebug() << "new user: " << senderAdr;
+    } else if(userList.value(senderAdr) != senderPort) {
+        userList.insert(senderAdr, senderPort);
+        qDebug() << "new port for: " << senderAdr;
+    }
 }

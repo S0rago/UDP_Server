@@ -11,6 +11,7 @@ public:
     void SendMessage(QString input = "Hello from UDP!");
     unsigned int CRC32(char *buf, unsigned long len);
     QByteArrayList ParseMessage(QByteArray arr);
+    void AddUser(QString, quint16);
 
 public slots:
     void readyRead();
