@@ -14,7 +14,7 @@ MyUDPSocket::MyUDPSocket(QObject *parent) :
 void MyUDPSocket::SendMessage(QString input) {
     //message+spearator byte+crc number
     QByteArray response;
-    response.append(input);
+    response.append(input.toUtf8());
     unsigned int crc = CRC32(response.data(), response.length());
     response.append(0xFF);
     response.append(QByteArray::number(crc));
@@ -43,12 +43,12 @@ void MyUDPSocket::readyRead() {
         AddUser(senderStr, senderPort);
         emit doneReading(senderStr, message);
 
-        QString toPrint = QString("<%1>: %2").arg(senderStr, message);
+        QString toPrint = QString("<%1>: %2").arg(senderStr, QString::fromUtf8(message));
         qDebug().noquote() << toPrint;
     }
     else qDebug("Recieve error");
 
-    if (QString(buffer) == "end") {
+    if (QString(QString::fromUtf8(message)) == "end") {
         socket->close();
         exit(0);
     }

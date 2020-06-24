@@ -20,7 +20,7 @@ void Dialog::clicked() {
     QString str, msg;
     str.append(ui->msgBox->toPlainText());
     if (str.length() > 0) {
-        qDebug() << "Send pressed: " << str;
+        qDebug() << "<You>: " << str;
         msg.append(QString("<%1> %2").arg("this", str));
         ui->logBox->append(msg);
         ui->msgBox->clear();
