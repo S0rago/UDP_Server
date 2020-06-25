@@ -11,7 +11,7 @@ MyUDPSocket::MyUDPSocket(QObject *parent) :
     qDebug("server started");
 }
 
-void MyUDPSocket::SendMessage(QString input) {
+void MyUDPSocket::SendMessage(QString input, QString recvFromAddr) {
     //message+spearator byte+crc number
     QByteArray response;
     response.append(input.toUtf8());
@@ -21,36 +21,41 @@ void MyUDPSocket::SendMessage(QString input) {
 
     QMap<QString, quint16>::iterator iterMap = userList.begin();
     while(iterMap != userList.end()) {
-        socket->writeDatagram(response, QHostAddress(iterMap.key()), iterMap.value());
+        if(iterMap.key() != recvFromAddr) {
+            socket->writeDatagram(response, QHostAddress(iterMap.key()), iterMap.value());
+        }
         iterMap++;
     }
 }
 
 void MyUDPSocket::readyRead() {
-    QByteArray buffer;
-    buffer.resize(socket->pendingDatagramSize());
+    while(socket->hasPendingDatagrams()) {
+        QByteArray buffer;
+        buffer.resize(socket->pendingDatagramSize());
 
-    QHostAddress sender;
-    quint16 senderPort;
+        QHostAddress sender;
+        quint16 senderPort;
 
-    socket->readDatagram(buffer.data(), buffer.size(), &sender, &senderPort);
-    QByteArrayList list = ParseMessage(buffer);
-    QByteArray message = list.at(0);
-    unsigned int chksum = list.at(1).toUInt();
+        socket->readDatagram(buffer.data(), buffer.size(), &sender, &senderPort);
+        QByteArrayList list = ParseMessage(buffer);
+        QByteArray message = list.at(0);
+        unsigned int chksum = list.at(1).toUInt();
 
-    if (chksum == CRC32(message.data(),message.length())) {
-        QString senderStr = sender.toString();
-        AddUser(senderStr, senderPort);
-        emit doneReading(senderStr, message);
+        if (chksum == CRC32(message.data(),message.length())) {
+            QString senderStr = sender.toString();
+            AddUser(senderStr, senderPort);
+            emit doneReading(senderStr, message);
+            QString toPrint = QString("<%1>: %2").arg(senderStr, QString::fromUtf8(message));
+            qDebug().noquote() << toPrint;
+            SendMessage(message, senderStr);
+        }
+        else qDebug("Recieve error");
 
-        QString toPrint = QString("<%1>: %2").arg(senderStr, QString::fromUtf8(message));
-        qDebug().noquote() << toPrint;
-    }
-    else qDebug("Recieve error");
-
-    if (QString(QString::fromUtf8(message)) == "end") {
-        socket->close();
-        exit(0);
+        if (QString(QString::fromUtf8(message)) == "end") {
+            socket->close();
+            exit(0);
+            break;
+        }
     }
 }
 
@@ -65,7 +70,7 @@ unsigned int MyUDPSocket::CRC32(char *buf, unsigned long len) {
     };
     crc = 0xFFFFFFFFUL;
     while (len--)
-    crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
+        crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
     crc = crc ^ 0xFFFFFFFFUL;
     //return crc ^ 0xFFFFFFFFUL;
     return crc;
