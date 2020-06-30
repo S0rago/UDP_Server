@@ -21,7 +21,7 @@ void Dialog::clicked() {
     str.append(ui->msgBox->toPlainText());
     if (str.length() > 0) {
         qDebug() << "<You>: " << str;
-        msg.append(QString("<%1> %2").arg("this", str));
+        msg.append(QString("<%1> %2").arg("You", str));
         ui->logBox->append(msg);
         ui->msgBox->clear();
         socket.SendMessage(str);

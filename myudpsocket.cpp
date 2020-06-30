@@ -14,6 +14,7 @@ MyUDPSocket::MyUDPSocket(QObject *parent) :
 void MyUDPSocket::SendMessage(QString input, QString recvFromAddr) {
     //message+spearator byte+crc number
     QByteArray response;
+    response.append(recvFromAddr != NULL ? recvFromAddr : socket->localAddress().toString()).append(0xFF);
     response.append(input.toUtf8());
     unsigned int crc = CRC32(response.data(), response.length());
     response.append(0xFF);
@@ -45,13 +46,13 @@ void MyUDPSocket::readyRead() {
             QString senderStr = sender.toString();
             AddUser(senderStr, senderPort);
             emit doneReading(senderStr, message);
-            QString toPrint = QString("<%1>: %2").arg(senderStr, QString::fromUtf8(message));
+            QString toPrint = QString("<%1>: %2").arg(senderStr, QString::fromUtf8(message.data(), message.size()));
             qDebug().noquote() << toPrint;
             SendMessage(message, senderStr);
         }
         else qDebug("Recieve error");
 
-        if (QString(QString::fromUtf8(message)) == "end") {
+        if (QString::fromUtf8(message) == "end") {
             socket->close();
             exit(0);
             break;
@@ -71,16 +72,12 @@ unsigned int MyUDPSocket::CRC32(char *buf, unsigned long len) {
     crc = 0xFFFFFFFFUL;
     while (len--)
         crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
-    crc = crc ^ 0xFFFFFFFFUL;
-    //return crc ^ 0xFFFFFFFFUL;
-    return crc;
-}
+    return crc ^ 0xFFFFFFFFUL;
+ }
 
 QByteArrayList MyUDPSocket::ParseMessage(QByteArray arr) {
+    //client addr 0xFF message 0xFF crc sum
     QByteArrayList list = arr.split(0xFF);
-    //list.append(arr.mid(arr.indexOf(0xFF)+1)); // CRC32 checksum
-    //list.append(arr.left(arr.length() - list[0].length()));
-    //list.append(arr.left(4)); TODO add packet header
     return list;
 }
 

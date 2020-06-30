@@ -8,7 +8,7 @@ class MyUDPSocket : public QObject {
     Q_OBJECT
 public:
     explicit MyUDPSocket(QObject *parent = 0);
-    void SendMessage(QString input = "Hello from UDP!", QString recvFromAddr = nullptr);
+    void SendMessage(QString input = "Hello from UDP!", QString recvFromAddr = NULL);
     unsigned int CRC32(char *buf, unsigned long len);
     QByteArrayList ParseMessage(QByteArray arr);
     void AddUser(QString, quint16);
